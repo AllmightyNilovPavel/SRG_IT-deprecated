@@ -1,0 +1,61 @@
+node(label: 'master'){
+  def DOCKER_SCRIPT
+
+  stage('Prepare'){
+    if(ENVIRONMENT == PROD){
+      // Если окружение ПРОДОВОЕ - не передаём список урлов для переопределения
+      DOCKER_SCRIPT = """./run.sh -e ENVIRONMENT=$ENVIRONMENT
+                                  -e option_parallel=$option_parallel
+                                  -e TEST_NAME=$TEST_NAME
+                      """
+    } else {
+      // Если окружение тестовое - то можно запускать скрипт
+      // без явного указания окружения
+      DOCKER_SCRIPT = """./run.sh -e option_krona_host=$KRONA_HOST
+                                  -e option_parallel=$option_parallel
+                                  -e option_ba_host=$BA_HOST
+                                  -e option_fa_host=$FA_HOST
+                                  -e TEST_NAME=$TEST_NAME
+                      """
+    }
+  }
+  stage('Pull Branch'){
+    checkout([
+      $class: 'GitSCM',
+      branches: [[name: '$BRANCH']],
+      doGenerateSubmoduleConfigurations: false,
+      extensions: [],
+      submoduleCfg: [],
+      userRemoteConfigs: [[
+        credentialsId: 'NilovPavel',
+        url: 'https://bitbucket.org/srg-dev/tests'
+      ]]
+    ])
+  }
+  stage('Run Docker'){
+    sh label: 'folders prepare',
+      returnStdout: true,
+      script: """rm -rf allure-report
+                rm -rf end2end/.reports
+
+                SCOPE="$BRANCH : $TEST_NAME : $ENVIRONMENT : $KRONA_HOST : $BA_HOST : $FA_HOST"
+                SCOPE=$(echo "$SCOPE" | md5sum | grep -o -e "^\S*")
+
+                mkdir -p allure-report-$SCOPE
+                mkdir -p end2end/.reports-$SCOPE
+
+                ln -s ./allure-report-$SCOPE ./allure-report
+                ln -s  ./.reports-$SCOPE  ./end2end/.reports
+              """
+    dir('end2end'){
+      sh label: 'docker script result',
+        returnStdout: true,
+        script: DOCKER_SCRIPT
+      }
+  }
+  stage('Generate Allure Report'){
+    allure includeProperties: false,
+           jdk: '',
+           results: [[path: 'end2end/.reports/allure']]
+  }
+}

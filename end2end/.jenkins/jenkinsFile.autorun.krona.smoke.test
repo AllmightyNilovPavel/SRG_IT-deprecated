@@ -1,0 +1,114 @@
+import org.jenkinsci.plugins.pipeline.modeldefinition.Utils
+import hudson.model.Result
+import hudson.model.Run
+import jenkins.model.CauseOfInterruption.UserInterruption
+
+@NonCPS
+def abortPreviousBuilds() {
+    Run previousBuild = currentBuild.rawBuild.getPreviousBuildInProgress()
+
+    while (previousBuild != null) {
+        if (previousBuild.isInProgress()) {
+            def executor = previousBuild.getExecutor()
+            if (executor != null) {
+                echo ">> Aborting older build #${previousBuild.number}"
+                executor.interrupt(Result.ABORTED, new UserInterruption(
+                    "Aborted by newer build #${currentBuild.number}"
+                ))
+            }
+        }
+
+        previousBuild = previousBuild.getPreviousBuildInProgress()
+    }
+}
+@NonCPS
+def getJobLastBuild(jobName){
+  def TEST_JOB_NAME = null
+  def TEST_JOB = Jenkins.instance.getItemByFullName(TEST_JOB_NAME)
+  
+  return TEST_JOB.getLastBuild()
+}
+
+// Определение пользователя который стартанул джобу
+@NonCPS
+def getBuildUser() {
+    def build = currentBuild.rawBuild
+    def user = currentBuild.getBuildCauses('hudson.model.Cause$UserIdCause').userName
+    
+    if (user != null) return user
+    def upstreamCause
+    while (upstreamCause = build.getCause(Cause.UpstreamCause)) {
+        build = upstreamCause.upstreamRun
+    }
+    if (user == null || user == '' || user == ' ') user = 'JenkinsAutomation'
+    return user
+}
+
+node(label: 'master'){
+    // Создаём переменные
+    def BUILD_USER = getBuildUser()
+	  def TEST_RESULTS
+	  def ALLURE_RESULTS
+    def LAST_BUILD = null
+    // Стартуем
+    try{
+      println('preparing environment')
+      stage('Дропаем старые сборки'){
+        abortPreviousBuilds()
+      }
+      stage("Получение доступа к репозиторию tests") {
+        currentBuild.displayName = "#${BUILD_NUMBER} Запуск UI тестов by $BUILD_USER."     
+        checkout([
+          $class: 'GitSCM', branches: [[name: 'master']],
+          doGenerateSubmoduleConfigurations: false,
+          extensions: [[$class: 'PerBuildTag']],
+          submoduleCfg: [],
+          userRemoteConfigs: [[credentialsId: 'NilovPavel', url: 'ssh://git@bitbucket.org/srg-dev/tests.git']]
+        ])
+      }
+      stage("Параллельная сборка сервисов окружения") {
+        println('Сейчас будем собирать сервисы в ветках')
+
+        build job: 'BUILD-KRONA-TEST_STANDS', 
+          parameters: [
+            string(name: 'BRANCH', value: 'master'), 
+            string(name: 'INSTANCE', value: 'tst'), 
+            booleanParam(name: 'MERGE_MASTER', value: true), 
+            booleanParam(name: 'BUILD_REACT_REGISTRY', value: false), 
+            booleanParam(name: 'BUILD_BA', value: false)
+          ]
+      }
+      stage("Ожидание запуска всех сервисов"){
+        sleep(time:10, unit:"MINUTES")
+      }
+      stage("Запуск UI автотестов Байкала"){
+        TEST_RESULTS = build job: 'Tests_EndToEnd', 
+          parameters: [
+            string(name: 'BRANCH', value: 'master'), 
+            string(name: 'TEST_NAME', value: 'krona.smoke'), 
+            string(name: 'ENVIRONMENT', value: 'TEST'), 
+            string(name: 'KRONA_HOST', value: 'https://test.srg-it.ru/9r'), 
+            string(name: 'BA_HOST', value: 'https://testba.srg-it.ru'), 
+            string(name: 'FA_HOST', value: 'test'), 
+            string(name: 'option_parallel', value: '8')
+          ]
+          
+        println('Результаты тестов: ' + TEST_RESULTS.getStatus())
+      }
+      stage('Collect results'){
+        LAST_BUILD = getJobLastBuild()
+        ALLURE_RESULTS = 'https://jenkins.srg-it.ru/view/QA/job/Tests_EndToEnd/' + TEST_RESULTS.getNumber() + '/allure/'
+        currentBuild.description = "Результаты выполнения тестов: <a style='color:GREEN' href='${ALLURE_RESULTS}'>SUCCESS</a>"
+      }
+    } catch (Exception e) {
+      LAST_BUILD = getJobLastBuild("Tests_EndToEnd")
+      println(LAST_BUILD)
+      // ALLURE_RESULTS = 'https://jenkins.srg-it.ru/view/QA/job/Tests_EndToEnd/' + TEST_JOB_LAST_BUILD + '/allure/'
+      currentBuild.description = "Результаты выполнения тестов: <a style='color:RED' href='${ALLURE_RESULTS}'>FAILED</a>"
+
+        println('-----------------------------------------------------------------')
+        println('Error: ' + e)
+        throw e
+        println('-----------------------------------------------------------------')
+    }
+}

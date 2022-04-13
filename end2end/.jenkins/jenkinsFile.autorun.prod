@@ -1,0 +1,25 @@
+node(label: 'master'){
+  def TEST_RESULTS
+   
+  // stage('Prepare'){}
+  stage('Run autotest job with PROD params'){
+    try{
+      TEST_RESULTS = build job: 'Tests_EndToEnd',
+                    parameters: [
+                      string(name: 'BRANCH', value: 'master'),
+                      string(name: 'TEST_NAME', value: 'loginLogout krona.CR.*'),
+                      string(name: 'ENVIRONMENT', value: 'PROD'),
+                      string(name: 'KRONA_HOST', value: ''),
+                      string(name: 'BA_HOST', value: ''),
+                      string(name: 'FA_HOST', value: ''),
+                      string(name: 'option_parallel', value: '8')
+                    ]
+    }catch(Exception e){
+      println('Error: ' + e)
+    }
+  }
+  stage('Collect results'){
+    def ALLURE_RESULTS = 'https://jenkins.srg-it.ru/view/QA/job/Tests_EndToEnd/' + TEST_RESULTS.getNumber() + '/allure/'
+    currentBuild.description = "Результаты выполнения тестов: <a style='color:GREEN' href='${ALLURE_RESULTS}'>SUCCESS</a>"
+  }
+}

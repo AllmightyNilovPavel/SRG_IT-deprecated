@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist/",
+    "baseUrl": "./src",
+    "experimentalDecorators": true,
+    "module": "CommonJS",
+    "target": "ES2019",
+    "jsx": "react",
+    "allowJs": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "allowUnreachableCode": false,
+    // "inlineSourceMap":true,
+    "moduleResolution": "node",
+    "declaration": false,
+    // "declarationDir": "./src",
+    "alwaysStrict": true,
+    "downlevelIteration": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "inlineSourceMap": true,
+    "inlineSources": true,
+    "checkJs": false,
+    "allowSyntheticDefaultImports": false,
+    "removeComments": true,
+    "typeRoots": ["node_modules\/@types", ".\/types"],
+    "noImplicitAny": false, // TODO
+    "lib": ["es2015", "es2016", "es2017", "dom", "scripthost", "esnext"],
+    "types": ["node", "webdriverio/sync", "@wdio/mocha-framework"]
+  },
+  "extensions": [".ts", ".tsx"],
+  "include": [".\/src\/**\/*.ts", ".\/src\/**\/*.tsx", ".\/types\/*.ts",".\/src\/*.json",".\/src\/*.js"],
+  "exclude": ["node_modules", ".reports", ".vscode", "config", "test_files"]
+}

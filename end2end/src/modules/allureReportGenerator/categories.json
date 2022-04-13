@@ -1,0 +1,28 @@
+[
+  {
+    "name": "Неиспользуемые тесты",
+    "matchedStatuses": ["skipped"]
+  },
+  {
+    "name": "Инфраструктурные проблемы",
+    "matchedStatuses": ["broken", "failed"],
+    "messageRegex": ".*bye-bye.*"
+  },
+  {
+    "name": "Устаревшие тесты",
+    "matchedStatuses": ["broken"],
+    "traceRegex": ".*FileNotFoundException.*"
+  },
+  {
+    "name": "Ошибка системы",
+    "matchedStatuses": ["broken"]
+  },
+  {
+    "name": "Ошибка теста",
+    "matchedStatuses": ["failed"]
+  },
+  {
+    "name": "Непредвиденная ошибка",
+    "matchedStatuses": ["unknown"]
+  }
+]

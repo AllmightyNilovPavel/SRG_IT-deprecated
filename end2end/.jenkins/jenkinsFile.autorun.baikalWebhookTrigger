@@ -1,0 +1,32 @@
+def TEST_RESULTS
+def ALLURE_RESULTS
+
+pipeline {
+    agent any
+    stages {
+      stage('Run Baikal UI autotests') {
+        steps {
+          script {
+            TEST_RESULTS = build job: 'Tests_EndToEnd',
+              parameters: [
+                string(name: 'BRANCH', value: 'master'),
+                string(name: 'TEST_NAME', value: '.baikal.smoke'),
+                string(name: 'ENVIRONMENT', value: 'TEST'),
+                string(name: 'KRONA_HOST', value: 'https://duo.test.srg-it.ru/9r'),
+                string(name: 'BA_HOST', value: 'https://duo.testba.srg-it.ru'),
+                string(name: 'FA_HOST', value: 'test'),
+                string(name: 'option_parallel', value: '8')
+              ]
+          }
+        }
+      }
+      stage('Collect results') {
+        steps {
+          script {
+            ALLURE_RESULTS = 'https://jenkins.srg-it.ru/view/QA/job/Tests_EndToEnd/' + TEST_RESULTS.getNumber() + '/allure/'
+            currentBuild.description = "<a href='${ALLURE_RESULTS}'>Результаты выполнения тестов</a>"
+          }
+        }
+      }
+    }
+}

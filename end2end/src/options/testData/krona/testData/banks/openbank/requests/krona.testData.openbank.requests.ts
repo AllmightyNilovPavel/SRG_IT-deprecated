@@ -1,0 +1,330 @@
+import { mathTestDataDistributor } from "modules/math/math.distributor";
+
+export const KronaTestDataOpenbankRequests = {
+  /**
+   * Данные для квартиры которая должна быть оценена роботом в диапазоне [-15%, 15%]
+   * @since 15.12.2021
+   */
+  FLAT_1: {
+    address: `Самарская обл, г Тольятти, Московский пр-кт, д ${mathTestDataDistributor.RANDOM.getMinIntFromRandomWithMinStartingNum(
+      100,
+      1
+    )}`,
+    houseNumber: mathTestDataDistributor.RANDOM.getMinIntFromRandomWithMinStartingNum(100, 1),
+    buildDate: 1972,
+    storeys: 16,
+    floor: mathTestDataDistributor.RANDOM.getMinIntFromRandomWithMinStartingNum(15, 1),
+    roomsCount: 4,
+    total_space:
+      mathTestDataDistributor.RANDOM.getRandomNumberBetween(70, 120) +
+      mathTestDataDistributor.RANDOM.getRandomNumberBetween(1, 100) / 100,
+    living_space:
+      mathTestDataDistributor.RANDOM.getRandomNumberBetween(50, 80) +
+      mathTestDataDistributor.RANDOM.getRandomNumberBetween(1, 100) / 100,
+    kitchen_space:
+      5.6 +
+      mathTestDataDistributor.RANDOM.getRandomNumberBetween(1, 10) +
+      mathTestDataDistributor.RANDOM.getRandomNumberBetween(1, 100) / 100,
+    wallsType_index: 1,
+    flatRepairs_index: 4,
+    price: 3500000,
+    custom1: new Date().toISOString(),
+  },
+  /**
+   * Данные для квартиры которая должна быть оценена роботом
+   * с отклонением больше чем "-15%"
+   * @since 17.12.2021
+   */
+  FLAT_2: {
+    address: "Самарская обл, г Тольятти, Московский пр-кт, д 11",
+    houseNumber: 11,
+    buildDate: 1972,
+    storeys: 5,
+    floor: 5,
+    roomsCount: 4,
+    total_space: 75.2,
+    living_space: 54.1,
+    kitchen_space: 5.6,
+    wallsType_index: 1,
+    flatRepairs_index: 4,
+    price: 1500000,
+    custom1: new Date().toISOString(),
+  },
+  /**
+   * Данные для квартиры c нулевой стоимостью
+   * @since 17.12.2021
+   */
+  FLAT_3: {
+    address: "Самарская обл, г Тольятти, Московский пр-кт, д 11",
+    houseNumber: 11,
+    buildDate: 2020,
+    storeys: 16,
+    floor: 5,
+    roomsCount: 4,
+    total_space: 100,
+    living_space: 75,
+    kitchen_space: 10,
+    wallsType_index: 0,
+    flatRepairs_index: 4,
+    price: 0,
+    custom1: new Date().toISOString(),
+  },
+  /** Данные для квартиры которая должна быть оценена роботом
+   * дороже лимита для региона
+   * @since 17.12.2021
+   */
+  FLAT_4: {
+    address: "Москва Ленинский проспект дом 66",
+    houseNumber: 136,
+    buildDate: 1980,
+    storeys: 16,
+    floor: 5,
+    roomsCount: 4,
+    total_space: 125.2,
+    living_space: 74.1,
+    kitchen_space: 10.6,
+    wallsType_index: 1,
+    flatRepairs_index: 4,
+    price: 30000000,
+    custom1: new Date().toISOString(),
+  },
+  /** Данные для квартиры которая должна быть оценена роботом
+   * дороже лимита для региона.
+   *
+   * А ещё мы должны попасть в стоимость робота (по возможности)
+   * @since 21.12.2021
+   */
+  FLAT_5: {
+    address: "Москва Ленинский проспект дом 66",
+    houseNumber: 136,
+    buildDate: 1980,
+    storeys: 16,
+    floor: 5,
+    roomsCount: 4,
+    total_space: 125.2,
+    living_space: 74.1,
+    kitchen_space: 10.6,
+    wallsType_index: 1,
+    flatRepairs_index: 4,
+    price: 53000000,
+    custom1: new Date().toISOString(),
+  },
+};
+
+export const KronaTestDataOpenbankRequestsOverprice = {
+  FLAT: {
+    MOSCOW: {
+      HIGH_PRICE: {
+        address: "Москва Ленинский проспект дом 66",
+        houseNumber: 136,
+        buildDate: 1980,
+        storeys: 16,
+        floor: 5,
+        roomsCount: 4,
+        total_space: 150.2,
+        living_space: 94.1,
+        kitchen_space: 15.6,
+        wallsType_index: 1,
+        flatRepairs_index: 4,
+        price: 50000000,
+        custom1: new Date().toISOString(),
+      },
+      LOW_PRICE: {
+        address: "Москва Ленинский проспект дом 66",
+        houseNumber: 136,
+        buildDate: 1980,
+        storeys: 16,
+        floor: 5,
+        roomsCount: 4,
+        total_space: 125.2,
+        living_space: 74.1,
+        kitchen_space: 10.6,
+        wallsType_index: 1,
+        flatRepairs_index: 4,
+        price: 49000000,
+        custom1: new Date().toISOString(),
+      },
+    },
+    MOSCOW_REGION: {
+      HIGH_PRICE: {
+        address: "Подольск проспект ленина 136",
+        houseNumber: 136,
+        buildDate: 1980,
+        storeys: 2,
+        floor: 2,
+        roomsCount: 4,
+        total_space: 150,
+        living_space: 104.1,
+        kitchen_space: 10.6,
+        wallsType_index: 1,
+        flatRepairs_index: 4,
+        price: 50000000,
+        custom1: new Date().toISOString(),
+      },
+      LOW_PRICE: {
+        address: "Подольск проспект ленина 136",
+        houseNumber: 136,
+        buildDate: 1980,
+        storeys: 2,
+        floor: 2,
+        roomsCount: 4,
+        total_space: 150,
+        living_space: 104.1,
+        kitchen_space: 10.6,
+        wallsType_index: 1,
+        flatRepairs_index: 4,
+        price: 49000000,
+        custom1: new Date().toISOString(),
+      },
+    },
+    PITER: {
+      HIGH_PRICE: {
+        address: "г Санкт-Петербург, ул Вязовая, д 8",
+        houseNumber: 8,
+        buildDate: 2005,
+        storeys: 6,
+        floor: 6,
+        roomsCount: 4,
+        total_space: 150,
+        living_space: 104.1,
+        kitchen_space: 15.6,
+        wallsType_index: 3,
+        flatRepairs_index: 4,
+        price: 61700000,
+        custom1: new Date().toISOString(),
+      },
+      LOW_PRICE: {
+        address: "Питер Никольская 3",
+        houseNumber: 14,
+        buildDate: 1980,
+        storeys: 2,
+        floor: 2,
+        roomsCount: 4,
+        total_space: 150,
+        living_space: 104.1,
+        kitchen_space: 10.6,
+        wallsType_index: 1,
+        flatRepairs_index: 4,
+        price: 45000000,
+        custom1: new Date().toISOString(),
+      },
+    },
+    PITER_REGION: {
+      HIGH_PRICE: {
+        address: "Шлиссельбург, ул Благодатная 1",
+        houseNumber: 14,
+        buildDate: 1980,
+        storeys: 2,
+        floor: 2,
+        roomsCount: 4,
+        total_space: 150,
+        living_space: 104.1,
+        kitchen_space: 10.6,
+        wallsType_index: 1,
+        flatRepairs_index: 4,
+        price: 50000000,
+        custom1: new Date().toISOString(),
+      },
+      LOW_PRICE: {
+        address: "Шлиссельбург, ул Ершовая 1",
+        houseNumber: 14,
+        buildDate: 1980,
+        storeys: 2,
+        floor: 2,
+        roomsCount: 4,
+        total_space: 150,
+        living_space: 104.1,
+        kitchen_space: 10.6,
+        wallsType_index: 1,
+        flatRepairs_index: 4,
+        price: 45000000,
+        custom1: new Date().toISOString(),
+      },
+    },
+    YAMALO_NENETS: {
+      HIGH_PRICE: {
+        address: "Новый уренгой сибирская 7",
+        houseNumber: 7,
+        buildDate: 2015,
+        storeys: 16,
+        floor: 16,
+        roomsCount: 4,
+        total_space: 170,
+        living_space: 124.1,
+        kitchen_space: 17.6,
+        wallsType_index: 5,
+        flatRepairs_index: 4,
+        price: 15000000,
+        custom1: new Date().toISOString(),
+      },
+      LOW_PRICE: {
+        address: "Новый уренгой сибирская 5",
+        houseNumber: 5,
+        buildDate: 1980,
+        storeys: 2,
+        floor: 2,
+        roomsCount: 4,
+        total_space: 150,
+        living_space: 104.1,
+        kitchen_space: 10.6,
+        wallsType_index: 1,
+        flatRepairs_index: 4,
+        price: 14999999,
+        custom1: new Date().toISOString(),
+      },
+    },
+    HANTY_MANS: {
+      HIGH_PRICE: {
+        address: "сургут мира 12",
+        houseNumber: 12,
+        buildDate: 2016,
+        storeys: 16,
+        floor: 16,
+        roomsCount: 4,
+        total_space: 170,
+        living_space: 124.1,
+        kitchen_space: 15.6,
+        wallsType_index: 4,
+        flatRepairs_index: 4,
+        price: 15000000,
+        custom1: new Date().toISOString(),
+      },
+      LOW_PRICE: {
+        address: "сургут мира 12",
+        houseNumber: 5,
+        buildDate: 1980,
+        storeys: 2,
+        floor: 2,
+        roomsCount: 2,
+        total_space: 50,
+        living_space: 34.1,
+        kitchen_space: 10.6,
+        wallsType_index: 1,
+        flatRepairs_index: 4,
+        price: 14999999,
+        custom1: new Date().toISOString(),
+      },
+    },
+    OTHER_REGION_1: { HIGH_PRICE: {}, LOW_PRICE: {} },
+    OTHER_REGION_2: { HIGH_PRICE: {}, LOW_PRICE: {} },
+    OTHER_REGION_3: { HIGH_PRICE: {}, LOW_PRICE: {} },
+  },
+  APARTMENT: {
+    PITER: { HIGH_PRICE: {}, LOW_PRICE: {} },
+    PITER_REGION: { HIGH_PRICE: {}, LOW_PRICE: {} },
+    YAMALO_NENETS: { HIGH_PRICE: {}, LOW_PRICE: {} },
+    HANTY_MANS: { HIGH_PRICE: {}, LOW_PRICE: {} },
+    OTHER_REGION_1: { HIGH_PRICE: {}, LOW_PRICE: {} },
+    OTHER_REGION_2: { HIGH_PRICE: {}, LOW_PRICE: {} },
+    OTHER_REGION_3: { HIGH_PRICE: {}, LOW_PRICE: {} },
+  },
+  TOWNHOUSE: {
+    PITER: { HIGH_PRICE: {}, LOW_PRICE: {} },
+    PITER_REGION: { HIGH_PRICE: {}, LOW_PRICE: {} },
+    YAMALO_NENETS: { HIGH_PRICE: {}, LOW_PRICE: {} },
+    HANTY_MANS: { HIGH_PRICE: {}, LOW_PRICE: {} },
+    OTHER_REGION_1: { HIGH_PRICE: {}, LOW_PRICE: {} },
+    OTHER_REGION_2: { HIGH_PRICE: {}, LOW_PRICE: {} },
+    OTHER_REGION_3: { HIGH_PRICE: {}, LOW_PRICE: {} },
+  },
+};

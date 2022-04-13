@@ -1,0 +1,11 @@
+**
+!src/**
+!types/**
+!.eslintrc.js
+!.prettierrc
+!Dockerfile
+!package.json
+!yarn.lock
+!tsconfig.json
+!wdio.conf.js
+!starter.sh

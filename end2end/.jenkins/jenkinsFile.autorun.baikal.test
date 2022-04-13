@@ -1,0 +1,97 @@
+import org.jenkinsci.plugins.pipeline.modeldefinition.Utils
+
+// Определение пользователя который стартанул джобу
+@NonCPS
+def getBuildUser() {
+    def build = currentBuild.rawBuild
+    def user = currentBuild.getBuildCauses('hudson.model.Cause$UserIdCause').userName
+
+    if (user != null) return user
+    def upstreamCause
+    while (upstreamCause = build.getCause(Cause.UpstreamCause)) {
+        build = upstreamCause.upstreamRun
+    }
+    if (user == null || user == '' || user == ' ') user = 'JenkinsAutomation'
+    return user
+}
+
+@NonCPS
+def getJobLastBuild(){
+  def TEST_JOB_NAME = "Tests_EndToEnd"
+  def TEST_JOB = Jenkins.instance.getItemByFullName(TEST_JOB_NAME)
+
+  return TEST_JOB.getLastBuild()
+}
+
+node(label: 'master'){
+    // Создаём переменные
+    def BUILD_USER = getBuildUser()
+	  def TEST_RESULTS
+	  def ALLURE_RESULTS
+    def TEST_JOB_LAST_BUILD = null
+
+    // Стартуем
+    println('preparing environment')
+    stage("Получение доступа к репозиторию tests") {
+      currentBuild.displayName = "#${BUILD_NUMBER} Запуск UI тестов by $BUILD_USER."
+      checkout(
+        [$class: 'GitSCM', branches: [[name: 'master']],
+        doGenerateSubmoduleConfigurations: false,
+        extensions: [[$class: 'PerBuildTag']],
+        submoduleCfg: [],
+        userRemoteConfigs: [[credentialsId: 'NilovPavel', url: 'ssh://git@bitbucket.org/srg-dev/tests.git']]]
+      )
+    }
+    stage("Параллельная сборка сервисов окружения") {
+        println('Сейчас будем собирать сервисы в ветках')
+        parallel(
+        a: {
+          build job: 'BUILD-BAIKAL-TEST',
+            parameters: [
+              string(name: 'PROJECT', value: 'baikal-service'),
+              string(name: 'SERVER', value: 'baikal-test.srg-it.ru'),
+              string(name: 'BRANCH', value: 'master'),
+              string(name: 'PREPARED_PACKAGE_NUM', value: '')
+            ]
+        },
+        b: {
+          build job: 'BUILD-KRONA-TEST_STANDS',
+            parameters: [
+              string(name: 'BRANCH', value: 'master'),
+              string(name: 'INSTANCE', value: 'duo'),
+              booleanParam(name: 'MERGE_MASTER', value: true),
+              booleanParam(name: 'BUILD_REACT_REGISTRY', value: false),
+              booleanParam(name: 'BUILD_BA', value: false)
+            ]
+        },
+        c: {
+          build job: 'BUILD-BAIKAL-TEST',
+            parameters: [
+              string(name: 'PROJECT', value: 'baikal-frontend-beta'),
+              string(name: 'SERVER', value: 'baikal-test.srg-it.ru'),
+              string(name: 'BRANCH', value: 'master'),
+              string(name: 'PREPARED_PACKAGE_NUM', value: '')
+            ]
+        }
+        )
+    }
+    stage("Ожидание запуска всех сервисов"){
+      sleep(time:10, unit:"MINUTES")
+    }
+    stage("Запуск UI автотестов Байкала"){
+      TEST_RESULTS = build job: 'Tests_EndToEnd',
+        parameters: [
+          string(name: 'BRANCH', value: 'master'),
+          string(name: 'TEST_NAME', value: '.baikal'),
+          string(name: 'ENVIRONMENT', value: 'TEST'),
+          string(name: 'KRONA_HOST', value: 'https://duo.test.srg-it.ru/9r'),
+          string(name: 'BA_HOST', value: 'https://duo.testba.srg-it.ru'),
+          string(name: 'FA_HOST', value: 'test'),
+          string(name: 'option_parallel', value: '8')
+        ]
+    }
+    stage('Collect results'){
+      ALLURE_RESULTS = 'https://jenkins.srg-it.ru/view/QA/job/Tests_EndToEnd/' + TEST_RESULTS.getNumber() + '/allure/'
+      currentBuild.description = "Результаты выполнения тестов: <a style='color:GREEN' href='${ALLURE_RESULTS}'>SUCCESS</a>"
+    }
+}
